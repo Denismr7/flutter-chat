@@ -4,6 +4,8 @@ void main() {
   runApp(FriendlyChatApp());
 }
 
+String _name = 'Denis';
+
 class FriendlyChatApp extends StatelessWidget {
   const FriendlyChatApp({
     Key key,
@@ -18,15 +20,58 @@ class FriendlyChatApp extends StatelessWidget {
   }
 }
 
+class ChatMessage extends StatelessWidget {
+  ChatMessage({this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            child: CircleAvatar(child: Text(_name[0])),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _name,
+                style: Theme.of(context).textTheme.headline4,
+              ),
+              Container(
+                margin: EdgeInsets.only(top: 5),
+                child: Text(text),
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ChatScreen extends StatefulWidget {
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final List<ChatMessage> _messages = [];
   final _textController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   void _handleSubmitted(String text) {
     _textController.clear();
+    ChatMessage message = ChatMessage(
+      text: text,
+    );
+    setState(() {
+      _messages.insert(0, message);
+    });
+    _focusNode.requestFocus();
   }
 
   Widget _buildTextComposer() {
@@ -39,6 +84,7 @@ class _ChatScreenState extends State<ChatScreen> {
               controller: _textController,
               onSubmitted: _handleSubmitted,
               decoration: InputDecoration.collapsed(hintText: 'Send a message'),
+              focusNode: _focusNode,
             ),
           ),
           IconTheme(
@@ -59,7 +105,22 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('FriendlyChat')),
-      body: _buildTextComposer(),
+      body: Column(
+        children: [
+          Flexible(
+              child: ListView.builder(
+            itemBuilder: (_, int index) => _messages[index],
+            itemCount: _messages.length,
+            padding: EdgeInsets.all(8),
+            reverse: true,
+          )),
+          Divider(height: 1),
+          Container(
+            decoration: BoxDecoration(color: Theme.of(context).cardColor),
+            child: _buildTextComposer(),
+          )
+        ],
+      ),
     );
   }
 }
